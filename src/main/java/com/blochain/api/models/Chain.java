@@ -1,13 +1,20 @@
 package com.blochain.api.models;
-
-import java.math.BigInteger;
+ 
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Table; 
+import javax.persistence.Table;
+import javax.xml.bind.DatatypeConverter;
+
+import org.springframework.util.DigestUtils;
+
+import com.google.common.hash.Hashing;
+
+import java.nio.charset.StandardCharsets; 
+import java.security.NoSuchAlgorithmException;
 
 @Entity
 @Table(name = "cadena")
@@ -16,28 +23,42 @@ public class Chain {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(unique = true, nullable = false)
-	private Long id;
+	public Long id;
 	 
 	@Column(name="hashcode")
-	private String hashcode;
+	public String hashcode;
 	
 	@Column(name="value")
-	private String content;  
+	public String content;  
+	 
 	
-	public Chain(Object previa, String values) {		
-		this.hashcode = ""+previa.hashCode();
-		this.content  = values;
+	public Chain setValues(Chain previa, String values) throws NoSuchAlgorithmException {		
+	
+		Chain instancia = new Chain();
+		
+		if (previa != null) {
+			instancia.hashcode = ""+previa.getHashcode();
+		}else {
+			instancia.hashcode = "INIT";
+		}
+		instancia.content  = values;
+		
+		return instancia;
+	} 
+	
+	public String getHashcode() throws NoSuchAlgorithmException {
+		String str = ""+this.toString();
+		
+		String sha256hex = Hashing.sha256()
+				  .hashString(str, StandardCharsets.UTF_8)
+				  .toString();
+		
+		return sha256hex; 
 	}
 	
-	public Long getId() {
-		return this.id;
-	}
-	
-	public String getHashcode() {
-		return this.hashcode;
-	}  
-
-	public String getContent() {
-		return this.content;
+	@Override
+	public String toString() {
+		String formato = "ID:%d - H: %s - V: %s";
+		return String.format(formato, this.id, this.hashcode, this.content);
 	}
 }

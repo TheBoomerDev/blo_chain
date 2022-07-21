@@ -1,5 +1,6 @@
 package com.blochain.api.services;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
  
 
@@ -15,7 +16,7 @@ public class ChainService {
 	@Autowired
 	ChainRepo repo;
 	
-	public Chain getByHascode(String hCode) throws Exception {
+	public Chain getByHascode(String hCode) throws Exception { 
 		
 		ArrayList<Chain> cadenas = repo.findByHashcode(hCode);
 		if (cadenas.size() <= 0) {
@@ -27,11 +28,21 @@ public class ChainService {
 	public Chain getLast() {
 		return repo.getLast();
 	}
+	
+	public Chain getById(Long id) {
+		return repo.findById(id).get();
+	}
     
-	public Chain guardar(String contenido) {
+	public Chain guardar(String contenido) throws NoSuchAlgorithmException {
 		
 		Chain lastChain = repo.getLast(); 
-		Chain cadena = new Chain(lastChain, contenido);
+		if (lastChain == null) {
+			// Nuestro primer bloque
+			lastChain = new Chain();
+		}
+		Chain cadena = new Chain(); 
+		cadena.hashcode = lastChain.getHashcode();
+		cadena.content = contenido;
 
 		return repo.save(cadena);
 	}
